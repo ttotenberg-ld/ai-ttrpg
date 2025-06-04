@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Task List Management
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD
+
+## Task Preparation
+- **Before starting a top-level task:**
+  1. Check the top-level task's intention against the source PRD this task list was derived from
+  2. Thoroughly audit the subtasks within this top-level task's group to ensure they coincide with with the PRD's requirements
+
+## Task Implementation
+- **Completion protocol:**  
+  1. One sub-task at a time. You **MUST** process only one sub-task at a time. Do not work on a following **sub-task** until the prior **sub-task** is complete.
+  2. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  3. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.
+
+## Task Testing
+- **When a top-level task is complete:**
+  1. Thoroughly audit the implementation of the top-level task, and all subtasks to ensure they are functioning, and coincide with the intended implementation described by the source PRD.
+  2. If necessary, create tests to validate the functionality of these tasks are working properly.
+
+## Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above.
+   - Add new tasks as they emerge.
+
+2. **Maintain the “Relevant Files” section:**
+   - List every file created or modified.
+   - Give each file a one‑line description of its purpose.
+
+## AI Instructions
+
+When working with task lists, the AI must:
+
+1. Regularly update the task list file after finishing any significant work.
+2. Follow the completion protocol:
+   - Mark each finished **sub‑task** `[x]`.
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
+3. Add newly discovered tasks.
+4. Keep “Relevant Files” accurate and up to date.
+5. Before starting work, check which sub‑task is next.
+6. After implementing a sub‑task, update the file and then pause for user approval.

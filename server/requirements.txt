@@ -1,0 +1,14 @@
+fastapi
+sqlmodel
+openai
+pyttsx3
+SpeechRecognition
+python-dotenv
+python-multipart
+requests
+uvicorn
+passlib[bcrypt]
+python-jose[cryptography]
+alembic
+psycopg2-binary
+faker 

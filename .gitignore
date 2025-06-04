@@ -1,0 +1,142 @@
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# FastAPI/Uvicorn temp files
+.uvicorn.sock
+
+# Databases
+*.sqlite3
+*.db
+
+# MyPy cache
+.mypy_cache/
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Secrets - typically in .env which is already ignored, but good to be explicit
+*.env.*
+!*.env.example
+
+# Logs
+logs/
+*.log
+
+# Node.js / React specific
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+node_modules/
+dist/
+dist-ssr/
+.local/
+.output/
+.vite-inspect/
+
+# Build output
+build/
+out/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Typescript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Editor directories and files
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+
+# Optional PnP files
+.pnp.*
+
+# Misc
+.DS_Store
+*.pem
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Coverage directory
+coverage/
+.coverage
+.nyc_output/
+
+# IDE specific
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.iml
+*.vscode/
+
+# Python Linter Cache Files (example for flake8)
+.flake8
+
+# If using Docker
+Dockerfile.*
+.dockerignore
+
+# Generated media (if these are not meant to be in git)
+# server/generated_media/
+# server/generated_audio_files/
+# server/temp_audio_files/ 
