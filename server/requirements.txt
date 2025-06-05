@@ -11,4 +11,10 @@ passlib[bcrypt]
 python-jose[cryptography]
 alembic
 psycopg2-binary
-faker 
+faker
+slowapi
+redis
+pytest
+pytest-asyncio
+httpx
+psutil 

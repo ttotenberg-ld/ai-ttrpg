@@ -7,20 +7,16 @@ alwaysApply: false
 
 Guidelines for managing task lists in markdown files to track progress on completing a PRD
 
-## Task Preparation
-- **Before starting a top-level task:**
-  1. Check the top-level task's intention against the source PRD this task list was derived from
-  2. Thoroughly audit the subtasks within this top-level task's group to ensure they coincide with with the PRD's requirements
-
 ## Task Implementation
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say “yes” or "y"
 - **Completion protocol:**  
-  1. One sub-task at a time. You **MUST** process only one sub-task at a time. Do not work on a following **sub-task** until the prior **sub-task** is complete.
-  2. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
-  3. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.  
+- Stop after each sub‑task and wait for the user’s go‑ahead.
 
 ## Task Testing
-- **When a top-level task is complete:**
-  1. Thoroughly audit the implementation of the top-level task, and all subtasks to ensure they are functioning, and coincide with the intended implementation described by the source PRD.
+- **When a parent task is complete:**
+  1. Thoroughly audit the implementation of the **parent task**, and all **sub‑tasks** to ensure they are functioning, and coincide with the intended implementation described by the source PRD.
   2. If necessary, create tests to validate the functionality of these tasks are working properly.
 
 ## Task List Maintenance

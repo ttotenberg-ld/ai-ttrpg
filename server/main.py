@@ -48,6 +48,16 @@ from reward_manager import generate_adventure_reward
 from media_generation import generate_encounter_image, generate_sound_effect, generate_background_music
 from database_backup import DatabaseBackupManager, DatabaseBackupError
 
+# Import security middleware and password validation
+from middleware import (
+    RateLimitMiddleware,
+    ErrorHandlerMiddleware,
+    setup_error_handlers,
+    RequestLoggerMiddleware
+)
+from middleware.rate_limiter import auth_rate_limit, api_rate_limit, strict_rate_limit
+from middleware.password_validator import validate_password_strength, get_password_policy
+
 import shutil # For saving the uploaded file
 
 # Response models for authentication
@@ -80,7 +90,18 @@ class RestoreRequest(SQLModel):
     backup_path: str
     confirm: bool = False
 
+class PasswordPolicyResponse(SQLModel):
+    min_length: int
+    max_length: int
+    requirements: dict
+    restrictions: dict
+
 app = FastAPI()
+
+# Setup security middleware
+setup_error_handlers(app)
+RateLimitMiddleware(app)
+app.add_middleware(RequestLoggerMiddleware)
 
 TEMP_AUDIO_DIR = "temp_audio_files"
 TTS_STATIC_DIR = "generated_audio_files/tts"
@@ -148,6 +169,7 @@ def on_startup():
     print(f"Serving generated music from directory: {os.path.abspath(MUSIC_STATIC_DIR)} at {MUSIC_MOUNT_ROUTE}")
 
 @app.post("/users/", response_model=User)
+@auth_rate_limit()
 async def create_user(user: UserCreate):
     with Session(engine) as session:
         db_user = session.exec(select(User).where(User.username == user.username)).first()
@@ -157,6 +179,20 @@ async def create_user(user: UserCreate):
         if db_user_email:
             raise HTTPException(status_code=400, detail="Email already registered")
         
+        # Validate password strength
+        password_result = validate_password_strength(user.password, user.username, user.email)
+        if not password_result.is_valid:
+            raise HTTPException(
+                status_code=400, 
+                detail={
+                    "message": "Password does not meet security requirements",
+                    "errors": password_result.errors,
+                    "suggestions": password_result.suggestions,
+                    "strength_score": password_result.score,
+                    "strength_level": password_result.strength_level
+                }
+            )
+        
         hashed_password = get_password_hash(user.password)
         db_user = User(username=user.username, email=user.email, hashed_password=hashed_password)
         session.add(db_user)
@@ -165,6 +201,7 @@ async def create_user(user: UserCreate):
         return db_user
 
 @app.post("/token", response_model=TokenResponse)
+@auth_rate_limit()
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     with Session(engine) as session:
         user = session.exec(select(User).where(User.username == form_data.username)).first()
@@ -235,6 +272,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
 
 @app.post("/auth/logout", response_model=MessageResponse)
+@auth_rate_limit()
 async def logout(logout_request: LogoutRequest):
     """Logout user by blacklisting their refresh token"""
     with Session(engine) as session:
@@ -247,6 +285,7 @@ async def logout(logout_request: LogoutRequest):
         return MessageResponse(message="Successfully logged out")
 
 @app.post("/auth/refresh", response_model=TokenResponse)
+@auth_rate_limit()
 async def refresh_access_token(refresh_request: RefreshTokenRequest):
     """Generate new access and refresh tokens using a valid refresh token"""
     with Session(engine) as session:
@@ -297,6 +336,7 @@ async def refresh_access_token(refresh_request: RefreshTokenRequest):
         )
 
 @app.post("/auth/cleanup-sessions", response_model=MessageResponse)
+@api_rate_limit()
 async def cleanup_expired_user_sessions():
     """Administrative endpoint to clean up expired user sessions"""
     with Session(engine) as session:
@@ -304,6 +344,7 @@ async def cleanup_expired_user_sessions():
         return MessageResponse(message=f"Cleaned up {cleaned_count} expired sessions")
 
 @app.post("/auth/forgot-password", response_model=MessageResponse)
+@strict_rate_limit()
 async def forgot_password(request: ForgotPasswordRequest):
     """Request a password reset token for the given email address"""
     with Session(engine) as session:
@@ -332,6 +373,7 @@ async def forgot_password(request: ForgotPasswordRequest):
         return MessageResponse(message="If an account with that email exists, a password reset link has been sent.")
 
 @app.post("/auth/reset-password", response_model=MessageResponse)
+@strict_rate_limit()
 async def reset_password(request: ResetPasswordRequest):
     """Reset user password using a valid password reset token"""
     with Session(engine) as session:
@@ -351,11 +393,18 @@ async def reset_password(request: ResetPasswordRequest):
                 detail="Invalid or expired password reset token"
             )
         
-        # Validate new password strength (basic validation)
-        if len(request.new_password) < 8:
+        # Validate new password strength
+        password_result = validate_password_strength(request.new_password, user.username, user.email)
+        if not password_result.is_valid:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password must be at least 8 characters long"
+                detail={
+                    "message": "Password does not meet security requirements",
+                    "errors": password_result.errors,
+                    "suggestions": password_result.suggestions,
+                    "strength_score": password_result.score,
+                    "strength_level": password_result.strength_level
+                }
             )
         
         # Update user password
@@ -369,6 +418,7 @@ async def reset_password(request: ResetPasswordRequest):
         mark_password_reset_token_as_used(request.token, session)
         
         # Invalidate all existing user sessions for security
+        from models import UserSession
         existing_sessions = session.exec(
             select(UserSession).where(
                 UserSession.user_id == user.id,
@@ -383,6 +433,12 @@ async def reset_password(request: ResetPasswordRequest):
         session.commit()
         
         return MessageResponse(message="Password has been successfully reset. Please log in with your new password.")
+
+@app.get("/auth/password-policy", response_model=PasswordPolicyResponse)
+async def get_password_policy_info():
+    """Get current password policy requirements"""
+    policy = get_password_policy()
+    return PasswordPolicyResponse(**policy)
 
 @app.get("/users/profile", response_model=UserProfile)
 async def get_user_profile(current_user: User = Depends(get_current_active_user)):
